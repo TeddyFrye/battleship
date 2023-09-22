@@ -31,3 +31,29 @@ test("should be able to get hit", () => {
   ship.hit();
   expect(ship.isSunk()).toBe(false);
 });
+
+// Tests for Gameboard
+const Gameboard = require("./gameboard");
+
+test("Gameboard can place a ship", () => {
+  const gameboard = Gameboard(Ship);
+  gameboard.placeShip([
+    { x: 0, y: 0 },
+    { x: 0, y: 1 },
+    { x: 0, y: 2 },
+  ]);
+  expect(gameboard.allShipsSunk()).toBe(false);
+});
+
+test("Gameboard can receive an attack", () => {
+  const gameboard = Gameboard(Ship);
+  gameboard.receiveAttack(0, 0);
+  expect(gameboard.getMissedAttacks()).toEqual([{ x: 0, y: 0 }]);
+});
+
+test("Gameboard can report all ships sunk", () => {
+  const gameboard = Gameboard(Ship);
+  gameboard.placeShip([{ x: 0, y: 0 }]);
+  gameboard.receiveAttack(0, 0);
+  expect(gameboard.allShipsSunk()).toBe(true);
+});
