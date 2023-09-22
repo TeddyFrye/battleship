@@ -22,7 +22,7 @@ function Player(name, gameboard, isComputer = false) {
     attack(x, y);
   };
 
-  return { name, attack, isComputer, computerMove };
+  return { name, attack, isComputer, computerMove, moves };
 }
 
 module.exports = Player;
