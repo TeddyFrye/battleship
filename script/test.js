@@ -6,7 +6,7 @@ test("it should work", () => {
 });
 
 // Tests for Ship
-const Ship = require("./ship");
+const Ship = require("./script/ship");
 
 test("should initialize with correct length", () => {
   const ship = Ship(3);
@@ -33,7 +33,7 @@ test("should be able to get hit", () => {
 });
 
 // Tests for Gameboard
-const Gameboard = require("./gameboard");
+const Gameboard = require("./script/gameboard");
 
 test("Gameboard can place a ship", () => {
   const gameboard = Gameboard(Ship);
@@ -59,7 +59,7 @@ test("Gameboard can report all ships sunk", () => {
 });
 
 // Tests for Player
-const Player = require("./player");
+const Player = require("./script/player");
 
 test("Player can attack enemy gameboard", () => {
   const enemyGameboard = Gameboard();

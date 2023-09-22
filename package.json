@@ -5,6 +5,7 @@
     "webpack-cli": "^5.1.4"
   },
   "scripts": {
+    "start": "serve .",
     "test": "jest",
     "build": "webpack"
   }
