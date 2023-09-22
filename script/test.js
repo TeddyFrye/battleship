@@ -57,3 +57,60 @@ test("Gameboard can report all ships sunk", () => {
   gameboard.receiveAttack(0, 0);
   expect(gameboard.allShipsSunk()).toBe(true);
 });
+
+// Tests for Player
+const Player = require("./player");
+
+test("Player can attack enemy gameboard", () => {
+  const enemyGameboard = Gameboard();
+  const player = Player("player1", enemyGameboard);
+  player.attack(0, 0);
+  expect(enemyGameboard.getMissedAttacks()).toEqual([{ x: 0, y: 0 }]);
+});
+
+test("Computer player can make a unique move", () => {
+  const enemyGameboard = Gameboard();
+  const computerPlayer = Player("computer", enemyGameboard, true);
+  computerPlayer.computerMove();
+  expect(enemyGameboard.getMissedAttacks().length).toBe(1);
+});
+
+test("Player should attack only unique coordinates", () => {
+  const enemyGameboard = Gameboard();
+  const player = Player("player1", enemyGameboard);
+  player.attack(0, 0);
+  player.attack(0, 0); // duplicate attack
+  expect(enemyGameboard.getMissedAttacks()).toEqual([{ x: 0, y: 0 }]);
+});
+
+test("Computer player should always make a unique move", () => {
+  const enemyGameboard = Gameboard();
+  const computerPlayer = Player("computer", enemyGameboard, true);
+  const totalCells = 100; // considering a 10x10 gameboard
+
+  // Let computer make moves until all cells are hit
+  for (let i = 0; i < totalCells; i++) computerPlayer.computerMove();
+
+  // Another move should not be possible as all cells are hit
+  expect(() => computerPlayer.computerMove()).toThrowError(
+    "No more unique moves available"
+  );
+});
+
+test("Player should be able to hit enemy ship", () => {
+  const enemyGameboard = Gameboard();
+  const ship = Ship(3);
+  enemyGameboard.placeShip(ship, 0, 0, "horizontal");
+  const player = Player("player1", enemyGameboard);
+  player.attack(0, 0);
+  expect(ship.isSunk()).toBe(false); // should not be sunk as it's of length 3 and hit once
+});
+
+test("Player should be able to sink enemy ship", () => {
+  const enemyGameboard = Gameboard();
+  const ship = Ship(1); // Ship of length 1
+  enemyGameboard.placeShip(ship, 0, 0, "horizontal");
+  const player = Player("player1", enemyGameboard);
+  player.attack(0, 0);
+  expect(ship.isSunk()).toBe(true); // should be sunk as it's of length 1 and hit once
+});
