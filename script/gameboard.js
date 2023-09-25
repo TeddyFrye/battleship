@@ -1,4 +1,4 @@
-const Ship = require("./script/ship");
+const Ship = require("./ship.js");
 
 const Gameboard = () => {
   let ships = [];

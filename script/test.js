@@ -1,12 +1,5 @@
-//test for tests to work
-const myFunction = require("./script/script.js"); // Adjust the import to your function or module
-
-test("it should work", () => {
-  expect(myFunction()).toBe(true); // Adjust the expectation to your actual function
-});
-
 // Tests for Ship
-const Ship = require("./script/ship.js");
+const Ship = require("./ship.js");
 // Test to check whether ship.js is connected properly
 test("should initialize with correct length", () => {
   const ship = Ship(3);
@@ -34,10 +27,10 @@ test("should be able to get hit without sinking", () => {
 });
 
 // Tests for Gameboard
-const Gameboard = require("./script/gameboard.js");
+const Gameboard = require("./gameboard.js");
 
 test("Gameboard can place a ship", () => {
-  const gameboard = Gameboard(Ship);
+  const gameboard = Gameboard();
   gameboard.placeShip([
     { x: 0, y: 0 },
     { x: 0, y: 1 },
@@ -47,24 +40,24 @@ test("Gameboard can place a ship", () => {
 });
 
 test("Gameboard can receive an attack", () => {
-  const gameboard = Gameboard(Ship);
+  const gameboard = Gameboard();
   gameboard.receiveAttack(0, 0);
   expect(gameboard.getMissedAttacks()).toEqual([{ x: 0, y: 0 }]);
 });
 
 test("Gameboard can report all ships sunk", () => {
-  const gameboard = Gameboard(Ship);
+  const gameboard = Gameboard();
   gameboard.placeShip([{ x: 0, y: 0 }]);
   gameboard.receiveAttack(0, 0);
   expect(gameboard.allShipsSunk()).toBe(true);
 });
 
 // Tests for Player
-const Player = require("./script/player.js");
+const Player = require("./player.js");
 
 // Test to check whether player.js is connected properly
 test("Player.js is connected properly", () => {
-  expect(Player()).toBe(true);
+  expect(Player()).toBeDefined();
 });
 
 // Test to check whether Player can attack the enemy Gameboard.
