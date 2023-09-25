@@ -1,5 +1,6 @@
+const { Ship, Gameboard, Player } = require("./script.js");
+
 // Tests for Ship
-const Ship = require("./ship.js");
 // Test to check whether ship.js is connected properly
 test("should initialize with correct length", () => {
   const ship = Ship(3);
@@ -27,8 +28,6 @@ test("should be able to get hit without sinking", () => {
 });
 
 // Tests for Gameboard
-const Gameboard = require("./gameboard.js");
-
 test("Gameboard can place a ship", () => {
   const gameboard = Gameboard();
   gameboard.placeShip([
@@ -53,8 +52,6 @@ test("Gameboard can report all ships sunk", () => {
 });
 
 // Tests for Player
-const Player = require("./player.js");
-
 // Test to check whether player.js is connected properly
 test("Player.js is connected properly", () => {
   expect(Player()).toBeDefined();
@@ -115,4 +112,54 @@ test("Player should be able to sink enemy ship", () => {
   const player = Player("player1", enemyGameboard);
   player.attack(0, 0);
   expect(enemyGameboard.ships[0].isSunk()).toBe(true);
+});
+
+// Test of Game Logic
+test("Ship: hit() should increment hitCount", () => {
+  const ship = Ship(3);
+  ship.hit();
+  expect(ship.getHitCount()).toEqual(1);
+});
+
+test("Ship: isSunk() should return true if hitCount is equal to length", () => {
+  const ship = Ship(1);
+  ship.hit();
+  expect(ship.isSunk()).toEqual(true);
+});
+
+test("Gameboard: placeShip() should add a ship to the board", () => {
+  const gameboard = Gameboard();
+  gameboard.placeShip([{ x: 0, y: 0 }]);
+  expect(gameboard.ships.length).toEqual(1);
+});
+
+test("Gameboard: receiveAttack() should add coordinates to missedAttacks if it does not hit a ship", () => {
+  const gameboard = Gameboard();
+  gameboard.receiveAttack(0, 0);
+  expect(gameboard.getMissedAttacks()).toEqual([{ x: 0, y: 0 }]);
+});
+
+test("Gameboard: allShipsSunk() should return true if all ships are sunk", () => {
+  const gameboard = Gameboard();
+  gameboard.placeShip([{ x: 0, y: 0 }]);
+  gameboard.receiveAttack(0, 0);
+  expect(gameboard.allShipsSunk()).toEqual(true);
+});
+
+test("Player: attack() should call receiveAttack() on enemy gameboard", () => {
+  const enemyGameboard = Gameboard();
+  const player = Player("player1", enemyGameboard);
+
+  player.attack(0, 0);
+
+  expect(enemyGameboard.getMissedAttacks()).toEqual([{ x: 0, y: 0 }]);
+});
+
+test("Player: computerMove() should add a move to the moves array", () => {
+  const gameboard = Gameboard();
+  const computer = Player("computer", gameboard, true);
+
+  computer.computerMove();
+
+  expect(computer.moves.length).toEqual(1);
 });

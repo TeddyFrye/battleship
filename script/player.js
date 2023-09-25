@@ -24,5 +24,3 @@ function Player(name, gameboard, isComputer = false) {
 
   return { name, attack, isComputer, computerMove, moves };
 }
-
-module.exports = Player;

@@ -39,5 +39,3 @@ const Gameboard = () => {
     ships, // Expose ships for testing
   };
 };
-
-module.exports = Gameboard;
