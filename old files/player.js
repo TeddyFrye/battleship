@@ -5,6 +5,7 @@ function Player(name, gameboard, isComputer = false) {
     if (isMoveValid(x, y)) {
       gameboard.receiveAttack(x, y);
       moves.push({ x, y });
+      console.log(`${name} attacked ${x}, ${y}.`);
     }
   };
 
@@ -20,6 +21,7 @@ function Player(name, gameboard, isComputer = false) {
     } while (!isMoveValid(x, y));
 
     attack(x, y);
+    console.log(`The Computer attacked ${x}, ${y}.`);
   };
 
   return { name, attack, isComputer, computerMove, moves };

@@ -3,6 +3,7 @@ function Ship(length) {
 
   function hit() {
     if (hitCount < length) hitCount++;
+    console.log("Direct hit! Coordinates: ({x}, {y})");
   }
 
   function isSunk() {
@@ -33,10 +34,12 @@ function Gameboard() {
         if (coord.x === x && coord.y === y) {
           ship.hit();
           hit = true;
+          console.log("Hit!");
         }
       });
     });
     if (!hit) missedAttacks.push({ x, y });
+    console.log("Missed!");
   };
 
   const getMissedAttacks = () => {
@@ -45,6 +48,7 @@ function Gameboard() {
 
   const allShipsSunk = () => {
     return ships.every((ship) => ship.isSunk());
+    console.log("All ships sunk!");
   };
 
   const printBoard = () => {
@@ -78,14 +82,9 @@ function Player(name, gameboard, isComputer = false) {
   const moves = [];
 
   const attack = (x, y) => {
-    if (isMoveValid(x, y)) {
-      gameboard.receiveAttack(x, y);
-      moves.push({ x, y });
-    }
-  };
-
-  const isMoveValid = (x, y) => {
-    return !moves.some((move) => move.x === x && move.y === y);
+    gameboard.receiveAttack(x, y);
+    moves.push({ x, y });
+    console.log(`${name} attacked ${x}, ${y}.`);
   };
 
   const computerMove = () => {
@@ -93,11 +92,23 @@ function Player(name, gameboard, isComputer = false) {
     do {
       x = Math.floor(Math.random() * 10);
       y = Math.floor(Math.random() * 10);
-    } while (!isMoveValid(x, y));
+    } while (moves.some((move) => move.x === x && move.y === y));
     attack(x, y);
+    console.log(`The Computer attacked ${x}, ${y}.`);
   };
 
   return { name, attack, isComputer, computerMove, moves };
+}
+
+function placePlayerShips(gameboard) {
+  let numberOfShips = 3; // or any number you prefer
+  for (let i = 0; i < numberOfShips; i++) {
+    let x = prompt(`Enter the x coordinate for ship ${i + 1}:`);
+    let y = prompt(`Enter the y coordinate for ship ${i + 1}:`);
+
+    // You may want to add some validation here to ensure the coordinates are valid and not already occupied
+    gameboard.placeShip([{ x: parseInt(x), y: parseInt(y) }]);
+  }
 }
 
 const playerBoard = Gameboard();
@@ -110,17 +121,36 @@ playerBoard.placeShip([{ x: 0, y: 0 }]);
 computerBoard.placeShip([{ x: 0, y: 0 }]);
 
 const gameLoop = () => {
-  playerBoard.printBoard();
-  // Example moves
-  player.attack(0, 0);
-  computer.computerMove();
-  console.log("Player Moves:", player.moves);
-  console.log("Computer Moves:", computer.moves);
+  placePlayerShips(playerBoard);
+  let gameOn = true;
+  let rounds = 0;
+  const maxRounds = 30;
+  while (gameOn) {
+    if (rounds >= maxRounds) {
+      console.log("Game Over! Too many rounds!");
+    }
+    playerBoard.printBoard();
+    computerBoard.printBoard();
+
+    let x = prompt("Enter the x coordinate:");
+    let y = prompt("Enter the y coordinate:");
+
+    x = parseInt(x);
+    y = parseInt(y);
+
+    player.attack(x, y);
+    computer.computerMove();
+    rounds++;
+
+    if (playerBoard.allShipsSunk() || computerBoard.allShipsSunk()) {
+      gameOn = false;
+      alert("Game Over!");
+    }
+  }
 };
 
-gameLoop();
-
-//export gameloop function
+// export functions for test.js
+exports.gameLoop = gameLoop;
 module.exports.gameLoop = gameLoop;
 module.exports.Ship = Ship;
 module.exports.Gameboard = Gameboard;
