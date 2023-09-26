@@ -48,7 +48,6 @@ function Gameboard() {
 
   const allShipsSunk = () => {
     return ships.every((ship) => ship.isSunk());
-    console.log("All ships sunk!");
   };
 
   const printBoard = () => {
@@ -94,20 +93,72 @@ function Player(name, gameboard, isComputer = false) {
       y = Math.floor(Math.random() * 10);
     } while (moves.some((move) => move.x === x && move.y === y));
     attack(x, y);
-    console.log(`The Computer attacked ${x}, ${y}.`);
   };
 
   return { name, attack, isComputer, computerMove, moves };
 }
 
 function placePlayerShips(gameboard) {
+  const isOccupied = (x, y, ships) => {
+    return ships.some((ship) =>
+      ship.coordinates.some((coord) => coord.x === x && coord.y === y)
+    );
+  };
+
+  const isValidCoordinate = (x, y) => {
+    return x >= 0 && x < 10 && y >= 0 && y < 10;
+  };
+
   let numberOfShips = 3; // or any number you prefer
   for (let i = 0; i < numberOfShips; i++) {
-    let x = prompt(`Enter the x coordinate for ship ${i + 1}:`);
-    let y = prompt(`Enter the y coordinate for ship ${i + 1}:`);
+    let isValid = false;
+    while (!isValid) {
+      let x = parseInt(prompt(`Enter the x coordinate for ship ${i + 1}:`));
+      let y = parseInt(prompt(`Enter the y coordinate for ship ${i + 1}:`));
 
-    // You may want to add some validation here to ensure the coordinates are valid and not already occupied
-    gameboard.placeShip([{ x: parseInt(x), y: parseInt(y) }]);
+      if (!isValidCoordinate(x, y)) {
+        alert("Invalid coordinates! Please enter coordinates between 0 and 9.");
+      } else if (isOccupied(x, y, gameboard.ships)) {
+        alert(
+          "Coordinates are already occupied! Please enter different coordinates."
+        );
+      } else {
+        gameboard.placeShip([{ x, y }]);
+        isValid = true;
+      }
+    }
+  }
+}
+
+function placeComputerShips(gameboard) {
+  const isOccupied = (x, y, ships) => {
+    return ships.some((ship) =>
+      ship.coordinates.some((coord) => coord.x === x && coord.y === y)
+    );
+  };
+
+  const isValidCoordinate = (x, y) => {
+    return x >= 0 && x < 10 && y >= 0 && y < 10;
+  };
+
+  let numberOfShips = 3;
+  for (let i = 0; i < numberOfShips; i++) {
+    let isValid = false;
+    while (!isValid) {
+      let x = Math.floor(Math.random() * 10);
+      let y = Math.floor(Math.random() * 10);
+
+      if (!isValidCoordinate(x, y)) {
+        console.error("Invalid coordinates! Computer made a mistake.");
+      } else if (isOccupied(x, y, gameboard.ships)) {
+        console.error(
+          "Coordinates are already occupied! Computer made a mistake."
+        );
+      } else {
+        gameboard.placeShip([{ x, y }]);
+        isValid = true;
+      }
+    }
   }
 }
 
@@ -116,12 +167,9 @@ const computerBoard = Gameboard();
 const player = Player("Player", computerBoard);
 const computer = Player("Computer", playerBoard, true);
 
-// Example of ship placement
-playerBoard.placeShip([{ x: 0, y: 0 }]);
-computerBoard.placeShip([{ x: 0, y: 0 }]);
-
 const gameLoop = () => {
   placePlayerShips(playerBoard);
+  placeComputerShips(computerBoard);
   let gameOn = true;
   let rounds = 0;
   const maxRounds = 30;
