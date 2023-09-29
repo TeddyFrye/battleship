@@ -198,8 +198,13 @@ const gameLoop = () => {
 };
 
 // export functions for test.js
-exports.gameLoop = gameLoop;
 module.exports.gameLoop = gameLoop;
 module.exports.Ship = Ship;
 module.exports.Gameboard = Gameboard;
 module.exports.Player = Player;
+
+// exports for console-only version
+module.exports.playerBoard = playerBoard;
+module.exports.computerBoard = computerBoard;
+module.exports.player = player;
+module.exports.computer = computer;
