@@ -1,4 +1,4 @@
-const { Ship, Gameboard, Player } = require("./script.js");
+const { Ship, Gameboard, Player } = require("./game.js");
 
 // Tests for Ship
 // Test to check whether ship.js is connected properly
