@@ -50,7 +50,7 @@ test("Ship can register hit and sink from gameboard", () => {
   const gameboard = Gameboard();
   const ship = Ship(Coordinate(0, 0), Coordinate(0, 0));
   gameboard.placeShip(ship);
-  gameboard.receiveAttack(0, 0);
+  gameboard.receiveAttack(Coordinate(0, 0));
   expect(ship.hits.length).toBe(1);
   expect(ship.isSunk()).toBe(true);
 });
@@ -61,8 +61,8 @@ test("Gameboard can report all ships sunk", () => {
   const ship2 = Ship(Coordinate(1, 1), Coordinate(1, 1));
   gameboard.placeShip(ship1);
   gameboard.placeShip(ship2);
-  gameboard.receiveAttack(0, 0);
-  gameboard.receiveAttack(1, 1);
+  gameboard.receiveAttack(Coordinate(0, 0));
+  gameboard.receiveAttack(Coordinate(1, 1));
   expect(ship1.isSunk()).toBe(true);
   expect(ship2.isSunk()).toBe(true);
   expect(gameboard.allShipsSunk()).toBe(true);
@@ -76,7 +76,7 @@ test("Player.js is connected properly", () => {
 test("Player can attack enemy gameboard", () => {
   const enemyGameboard = Gameboard();
   const player = Player("player1", enemyGameboard);
-  player.attack(0, 0);
+  player.attack(Coordinate(0, 0));
   expect(enemyGameboard.getMissedAttacks()[0].equals(Coordinate(0, 0))).toBe(
     true
   );
@@ -104,7 +104,7 @@ test("Player should be able to hit and sink enemy ship", () => {
   ship = Ship(Coordinate(0, 0), Coordinate(0, 0));
   enemyGameboard.placeShip(ship);
   const player = Player("player1", enemyGameboard);
-  player.attack(0, 0);
+  player.attack(Coordinate(0, 0));
   expect(enemyGameboard.ships[0].hits.length).toBe(1);
   expect(enemyGameboard.ships[0].isSunk()).toBe(true);
   expect(enemyGameboard.allShipsSunk()).toBe(true);
