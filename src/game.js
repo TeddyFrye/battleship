@@ -143,7 +143,7 @@ function Gameboard() {
       .fill("▪️")
       .map(() => Array(size).fill("🔳"));
     missedAttacks.forEach(({ x, y }) => {
-      board[x][y] = "O";
+      board[x][y] = "🌊";
     });
 
     ships.forEach((ship) => {
