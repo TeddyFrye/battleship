@@ -1,9 +1,10 @@
+const BOARD_SIZE = 3;
+
 function Ship(length) {
   let hitCount = 0;
-
+  // CHANGE SHIP SIZES?
   function hit() {
     if (hitCount < length) hitCount++;
-    console.log("Direct hit! Coordinates: ({x}, {y})");
   }
 
   function isSunk() {
@@ -18,28 +19,57 @@ function Ship(length) {
 }
 
 function Gameboard() {
+  const size = BOARD_SIZE;
   let ships = [];
   let missedAttacks = [];
 
-  const placeShip = (coordinates) => {
-    let ship = Ship(coordinates.length);
-    ship.coordinates = coordinates;
-    ships.push(ship);
+  const isValidCoordinate = (x, y) => {
+    return x >= 0 && x < size && y >= 0 && y < size;
   };
 
-  const receiveAttack = (x, y) => {
-    let hit = false;
-    ships.forEach((ship) => {
-      ship.coordinates.forEach((coord) => {
-        if (coord.x === x && coord.y === y) {
-          ship.hit();
-          hit = true;
-          console.log("Hit!");
-        }
-      });
+  const isOccupied = (x, y) => {
+    return getShipIfOccupied(x, y) !== false;
+  };
+
+  const getShipIfOccupied = (x, y) => {
+    const foundShip = ships.find((ship) =>
+      ship.coordinates.some((coord) => coord.x === x && coord.y === y)
+    );
+    return foundShip || false;
+  };
+
+  const placeShip = (coordinates) => {
+    let canPlace = true;
+
+    coordinates.forEach(({ x, y }) => {
+      if (!isValidPlacement(x, y)) {
+        canPlace = false;
+      }
     });
-    if (!hit) missedAttacks.push({ x, y });
-    console.log("Missed!");
+
+    if (canPlace) {
+      let ship = Ship(coordinates.length);
+      ship.coordinates = coordinates;
+      ships.push(ship);
+      return true;
+    }
+
+    return false;
+  };
+
+  function isValidPlacement(x, y) {
+    return isValidCoordinate(x, y) && !isOccupied(x, y);
+  }
+
+  const receiveAttack = (x, y) => {
+    const ship = getShipIfOccupied(x, y);
+    if (ship) {
+      ship.hit();
+      console.log("Hit!");
+    } else {
+      missedAttacks.push({ x, y });
+      console.log("Missed!");
+    }
   };
 
   const getMissedAttacks = () => {
@@ -50,21 +80,30 @@ function Gameboard() {
     return ships.every((ship) => ship.isSunk());
   };
 
-  const printBoard = () => {
-    let board = Array(10)
-      .fill(".")
-      .map(() => Array(10).fill("."));
+  const printBoard = (label) => {
+    console.log(`\n${label}'s board:`);
+    let board = Array(size)
+      .fill("▪️")
+      .map(() => Array(size).fill("🔳"));
     missedAttacks.forEach(({ x, y }) => {
       board[x][y] = "O";
     });
 
     ships.forEach((ship) => {
       ship.coordinates.forEach(({ x, y }) => {
-        board[x][y] = ship.isSunk() ? "X" : "S";
+        board[x][y] = ship.isSunk() ? "🔥" : "🚢";
       });
     });
 
     console.log(board.map((row) => row.join(" ")).join("\n"));
+  };
+
+  const getStatus = () => {
+    // return lost if the player with this board has lost
+    if (allShipsSunk()) {
+      return "lost";
+    }
+    return "playing";
   };
 
   return {
@@ -74,6 +113,8 @@ function Gameboard() {
     printBoard,
     ships,
     getMissedAttacks,
+    size,
+    getStatus,
   };
 }
 
@@ -81,16 +122,21 @@ function Player(name, gameboard, isComputer = false) {
   const moves = [];
 
   const attack = (x, y) => {
+    logAttack(x, y);
     gameboard.receiveAttack(x, y);
     moves.push({ x, y });
-    console.log(`${name} attacked ${x}, ${y}.`);
+  };
+
+  const logAttack = (x, y) => {
+    console.log(`${name} attacked ${x}, ${y}`);
   };
 
   const computerMove = () => {
     let x, y;
+
     do {
-      x = Math.floor(Math.random() * 10);
-      y = Math.floor(Math.random() * 10);
+      x = Math.floor(Math.random() * BOARD_SIZE);
+      y = Math.floor(Math.random() * BOARD_SIZE);
     } while (moves.some((move) => move.x === x && move.y === y));
     attack(x, y);
   };
@@ -98,33 +144,24 @@ function Player(name, gameboard, isComputer = false) {
   return { name, attack, isComputer, computerMove, moves };
 }
 
+function placeDefaultShips(gameboard) {
+  gameboard.placeShip([{ x: 0, y: 0 }]);
+  gameboard.placeShip([{ x: 1, y: 0 }]);
+  gameboard.placeShip([{ x: 1, y: 2 }]);
+}
+
 function placePlayerShips(gameboard) {
-  const isOccupied = (x, y, ships) => {
-    return ships.some((ship) =>
-      ship.coordinates.some((coord) => coord.x === x && coord.y === y)
-    );
-  };
-
-  const isValidCoordinate = (x, y) => {
-    return x >= 0 && x < 10 && y >= 0 && y < 10;
-  };
-
   let numberOfShips = 3; // or any number you prefer
   for (let i = 0; i < numberOfShips; i++) {
-    let isValid = false;
-    while (!isValid) {
+    let isPlaced = false;
+    while (!isPlaced) {
       let x = parseInt(prompt(`Enter the x coordinate for ship ${i + 1}:`));
       let y = parseInt(prompt(`Enter the y coordinate for ship ${i + 1}:`));
 
-      if (!isValidCoordinate(x, y)) {
-        alert("Invalid coordinates! Please enter coordinates between 0 and 9.");
-      } else if (isOccupied(x, y, gameboard.ships)) {
-        alert(
-          "Coordinates are already occupied! Please enter different coordinates."
-        );
-      } else {
-        gameboard.placeShip([{ x, y }]);
-        isValid = true;
+      isPlaced = gameboard.placeShip([{ x, y }]);
+
+      if (!isPlaced) {
+        alert(`Error placing ship at ${x}, ${y}. Please try again.`);
       }
     }
   }
@@ -138,15 +175,15 @@ function placeComputerShips(gameboard) {
   };
 
   const isValidCoordinate = (x, y) => {
-    return x >= 0 && x < 10 && y >= 0 && y < 10;
+    return x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE;
   };
 
   let numberOfShips = 3;
   for (let i = 0; i < numberOfShips; i++) {
     let isValid = false;
     while (!isValid) {
-      let x = Math.floor(Math.random() * 10);
-      let y = Math.floor(Math.random() * 10);
+      let x = Math.floor(Math.random() * BOARD_SIZE);
+      let y = Math.floor(Math.random() * BOARD_SIZE);
 
       if (!isValidCoordinate(x, y)) {
         console.error("Invalid coordinates! Computer made a mistake.");
@@ -167,43 +204,39 @@ const computerBoard = Gameboard();
 const player = Player("Player", computerBoard);
 const computer = Player("Computer", playerBoard, true);
 
-const gameLoop = () => {
-  placePlayerShips(playerBoard);
-  placeComputerShips(computerBoard);
-  let gameOn = true;
-  let rounds = 0;
-  const maxRounds = 30;
-  while (gameOn) {
-    if (rounds >= maxRounds) {
-      console.log("Game Over! Too many rounds!");
-    }
-    playerBoard.printBoard();
-    computerBoard.printBoard();
+const gameStart = () => {
+  placeDefaultShips(playerBoard);
+  placeDefaultShips(computerBoard);
+  playerBoard.printBoard("👶");
+  computerBoard.printBoard("🤖");
+};
 
-    let x = prompt("Enter the x coordinate:");
-    let y = prompt("Enter the y coordinate:");
+const gameStep = (x, y) => {
+  player.attack(x, y);
+  computerBoard.printBoard("🤖");
+  let status = computerBoard.getStatus();
+  if (status === "lost") {
+    console.log("Player wins!");
+    return;
+  }
 
-    x = parseInt(x);
-    y = parseInt(y);
-
-    player.attack(x, y);
-    computer.computerMove();
-    rounds++;
-
-    if (playerBoard.allShipsSunk() || computerBoard.allShipsSunk()) {
-      gameOn = false;
-      alert("Game Over!");
-    }
+  computer.computerMove();
+  playerBoard.printBoard("👶");
+  status = playerBoard.getStatus();
+  if (status === "lost") {
+    console.log("Computer wins!");
+    return;
   }
 };
 
 // export functions for test.js
-module.exports.gameLoop = gameLoop;
 module.exports.Ship = Ship;
 module.exports.Gameboard = Gameboard;
 module.exports.Player = Player;
 
 // exports for console-only version
+module.exports.gameStart = gameStart;
+module.exports.gameStep = gameStep;
 module.exports.playerBoard = playerBoard;
 module.exports.computerBoard = computerBoard;
 module.exports.player = player;
