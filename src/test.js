@@ -77,8 +77,11 @@ test("Computer player can make a unique move", () => {
 test("Computer player should always make a unique move", () => {
   const enemyGameboard = Gameboard();
   const computerPlayer = Player("computer", enemyGameboard, true);
-  for (let i = 0; i < 100; i++) computerPlayer.computerMove();
-  expect(new Set(computerPlayer.moves.map(JSON.stringify)).size).toBe(100);
+  const totalSpaces = enemyGameboard.size * enemyGameboard.size;
+  for (let i = 0; i < totalSpaces; i++) computerPlayer.computerMove();
+  expect(new Set(computerPlayer.moves.map(JSON.stringify)).size).toBe(
+    totalSpaces
+  );
 });
 
 // Test to ensure that a Player can hit an enemy ship.
