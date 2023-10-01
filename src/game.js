@@ -1,21 +1,69 @@
 const BOARD_SIZE = 3;
 
-function Ship(length) {
-  let hitCount = 0;
-  // CHANGE SHIP SIZES?
-  function hit() {
-    if (hitCount < length) hitCount++;
+function Coordinate(x, y) {
+  function sameRow(other) {
+    return y === other.y;
+  }
+
+  function sameColumn(other) {
+    return x === other.x;
+  }
+
+  function equals(other) {
+    return sameRow(other) && sameColumn(other);
+  }
+
+  return { x, y, sameRow, sameColumn, equals };
+}
+
+function Ship(start, end) {
+  if (!start || !end) {
+    console.error("Invalid coordinates for Ship.");
+    return null;
+  }
+
+  if (!start.sameRow(end) && !start.sameColumn(end)) {
+    console.error(
+      "Invalid ship placement: Start and End coordinates are neither in the same row nor column."
+    );
+    return null;
+  }
+
+  const coordinates = [];
+
+  function makeCoords(start, end) {
+    const minX = Math.min(start.x, end.x);
+    const maxX = Math.max(start.x, end.x);
+    const minY = Math.min(start.y, end.y);
+    const maxY = Math.max(start.y, end.y);
+
+    for (let x = minX; x <= maxX; x++) {
+      for (let y = minY; y <= maxY; y++) {
+        coordinates.push(Coordinate(x, y));
+      }
+    }
+  }
+
+  makeCoords(start, end);
+
+  const length = coordinates.length;
+  const hits = [];
+
+  function hit(coordinate) {
+    // Check if the coordinate is part of the ship and hasn't been hit yet
+    const target = coordinates.find((coord) => coord.equals(coordinate));
+    const alreadyHit = hits.some((hit) => hit.equals(coordinate));
+
+    if (target && !alreadyHit) {
+      hits.push(target);
+    }
   }
 
   function isSunk() {
-    return hitCount >= length;
+    return hits.length >= length;
   }
 
-  function getHitCount() {
-    return hitCount;
-  }
-
-  return { length, hit, isSunk, getHitCount };
+  return { coordinates, hit, hits, isSunk };
 }
 
 function Gameboard() {
@@ -38,18 +86,16 @@ function Gameboard() {
     return foundShip || false;
   };
 
-  const placeShip = (coordinates) => {
+  const placeShip = (ship) => {
     let canPlace = true;
 
-    coordinates.forEach(({ x, y }) => {
+    ship.coordinates.forEach(({ x, y }) => {
       if (!isValidPlacement(x, y)) {
         canPlace = false;
       }
     });
 
     if (canPlace) {
-      let ship = Ship(coordinates.length);
-      ship.coordinates = coordinates;
       ships.push(ship);
       return true;
     }
@@ -62,12 +108,23 @@ function Gameboard() {
   }
 
   const receiveAttack = (x, y) => {
+    const coordinate = Coordinate(x, y);
+    // Check if this coordinate has already been attacked
+    const alreadyAttacked =
+      missedAttacks.some((miss) => miss.equals(coordinate)) ||
+      ships.some((ship) => ship.hits.some((hit) => hit.equals(coordinate)));
+
+    if (alreadyAttacked) {
+      console.log("Already attacked this coordinate!");
+      return;
+    }
+
     const ship = getShipIfOccupied(x, y);
     if (ship) {
-      ship.hit();
+      ship.hit(coordinate);
       console.log("Hit!");
     } else {
-      missedAttacks.push({ x, y });
+      missedAttacks.push(coordinate);
       console.log("Missed!");
     }
   };
@@ -145,9 +202,9 @@ function Player(name, gameboard, isComputer = false) {
 }
 
 function placeDefaultShips(gameboard) {
-  gameboard.placeShip([{ x: 0, y: 0 }]);
-  gameboard.placeShip([{ x: 1, y: 0 }]);
-  gameboard.placeShip([{ x: 1, y: 2 }]);
+  gameboard.placeShip(Ship(Coordinate(0, 0), Coordinate(0, 0)));
+  // gameboard.placeShip([{ x: 1, y: 0 }]);
+  // gameboard.placeShip([{ x: 1, y: 2 }]);
 }
 
 function placePlayerShips(gameboard) {
@@ -230,6 +287,7 @@ const gameStep = (x, y) => {
 };
 
 // export functions for test.js
+module.exports.Coordinate = Coordinate;
 module.exports.Ship = Ship;
 module.exports.Gameboard = Gameboard;
 module.exports.Player = Player;
