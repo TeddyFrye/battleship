@@ -218,31 +218,31 @@ function placeDefaultShips(gameboard) {
   // gameboard.placeShip([{ x: 1, y: 2 }]);
 }
 
-const playerBoard = Gameboard();
+const humanBoard = Gameboard();
 const computerBoard = Gameboard();
-const player = Player("Player", computerBoard);
-const computer = Player("Computer", playerBoard, true);
+const human = Player("Human", computerBoard);
+const computer = Player("Computer", humanBoard, true);
 
 const gameStart = () => {
-  placeDefaultShips(playerBoard);
+  placeDefaultShips(humanBoard);
   placeDefaultShips(computerBoard);
-  playerBoard.printBoard("👶");
+  humanBoard.printBoard("👶");
   computerBoard.printBoard("🤖");
 };
 
 const gameStep = (x, y) => {
   const target = Coordinate(x, y);
-  player.attack(target);
+  human.attack(target);
   computerBoard.printBoard("🤖");
   let status = computerBoard.getStatus();
   if (status === "lost") {
-    console.log("Player wins!");
+    console.log("Human wins!");
     return;
   }
 
   computer.computerMove();
-  playerBoard.printBoard("👶");
-  status = playerBoard.getStatus();
+  humanBoard.printBoard("👶");
+  status = humanBoard.getStatus();
   if (status === "lost") {
     console.log("Computer wins!");
     return;
@@ -258,7 +258,7 @@ module.exports.Player = Player;
 // exports for console-only version
 module.exports.gameStart = gameStart;
 module.exports.gameStep = gameStep;
-module.exports.playerBoard = playerBoard;
+module.exports.humanBoard = humanBoard;
 module.exports.computerBoard = computerBoard;
-module.exports.player = player;
+module.exports.human = human;
 module.exports.computer = computer;

@@ -75,8 +75,8 @@ test("Player.js is connected properly", () => {
 
 test("Player can attack enemy gameboard", () => {
   const enemyGameboard = Gameboard();
-  const player = Player("player1", enemyGameboard);
-  player.attack(Coordinate(0, 0));
+  const human = Player("human1", enemyGameboard);
+  human.attack(Coordinate(0, 0));
   expect(enemyGameboard.getMissedAttacks()[0].equals(Coordinate(0, 0))).toBe(
     true
   );
@@ -103,8 +103,8 @@ test("Player should be able to hit and sink enemy ship", () => {
   const enemyGameboard = Gameboard();
   ship = Ship(Coordinate(0, 0), Coordinate(0, 0));
   enemyGameboard.placeShip(ship);
-  const player = Player("player1", enemyGameboard);
-  player.attack(Coordinate(0, 0));
+  const human = Player("human1", enemyGameboard);
+  human.attack(Coordinate(0, 0));
   expect(enemyGameboard.ships[0].hits.length).toBe(1);
   expect(enemyGameboard.ships[0].isSunk()).toBe(true);
   expect(enemyGameboard.allShipsSunk()).toBe(true);
