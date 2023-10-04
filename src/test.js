@@ -1,4 +1,4 @@
-const { Coordinate, Ship, Gameboard, Player } = require("./game.js");
+const { Coordinate, Ship, Gameboard, Player, Game } = require("./game.js");
 
 // Tests for Ship
 test("should initialize with correct length and no hits", () => {
@@ -85,15 +85,15 @@ test("Player can attack enemy gameboard", () => {
 test("Computer player can make a unique move", () => {
   const enemyGameboard = Gameboard();
   const computerPlayer = Player("computer", enemyGameboard, true);
-  computerPlayer.computerMove();
+  computerPlayer.randomMove();
   expect(computerPlayer.moves.length).toBe(1);
 });
 
-test("Computer player should be able to fill board", () => {
+test("Random moves should be able to fill board", () => {
   const enemyGameboard = Gameboard();
   const computerPlayer = Player("computer", enemyGameboard, true);
   const totalSpaces = enemyGameboard.size * enemyGameboard.size;
-  for (let i = 0; i < totalSpaces; i++) computerPlayer.computerMove();
+  for (let i = 0; i < totalSpaces; i++) computerPlayer.randomMove();
   expect(new Set(computerPlayer.moves.map(JSON.stringify)).size).toBe(
     totalSpaces
   );
@@ -108,4 +108,19 @@ test("Player should be able to hit and sink enemy ship", () => {
   expect(enemyGameboard.ships[0].hits.length).toBe(1);
   expect(enemyGameboard.ships[0].isSunk()).toBe(true);
   expect(enemyGameboard.allShipsSunk()).toBe(true);
+});
+
+// Tests for Game
+
+test("Restart game should reset all game variables", () => {
+  const game = Game();
+  expect(game.getWinner()).toBe(null);
+  game.placeDefault();
+  game.step(0, 0);
+  expect(game.getWinner()).not.toBe(null);
+  game.restart();
+
+  expect(game.humanBoard.ships.length).toBe(0);
+  expect(game.computerBoard.ships.length).toBe(0);
+  expect(game.computer.moves.length).toBe(0);
 });

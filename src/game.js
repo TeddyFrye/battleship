@@ -70,6 +70,10 @@ function Gameboard() {
   const size = BOARD_SIZE;
   let ships = [];
   let missedAttacks = [];
+  const reset = () => {
+    ships.length = 0;
+    missedAttacks.length = 0;
+  };
 
   const isValidCoordinate = (coordinate) => {
     const { x, y } = coordinate;
@@ -139,7 +143,10 @@ function Gameboard() {
     return ships.every((ship) => ship.isSunk());
   };
 
-  const printBoard = (label) => {
+  const print = (label, withShips) => {
+    if (withShips === undefined) {
+      withShips = true;
+    }
     console.log(`\n${label}'s board:`);
     let board = Array(size)
       .fill("▪️")
@@ -148,9 +155,11 @@ function Gameboard() {
       board[y][x] = "🌊";
     });
 
+    shipCharacter = withShips ? "🚢" : "🔳";
+
     ships.forEach((ship) => {
       ship.coordinates.forEach(({ x, y }) => {
-        board[y][x] = ship.isSunk() ? "🔥" : "🚢";
+        board[y][x] = ship.isSunk() ? "🔥" : shipCharacter;
       });
     });
 
@@ -169,16 +178,20 @@ function Gameboard() {
     placeShip,
     receiveAttack,
     allShipsSunk,
-    printBoard,
+    print,
     ships,
     getMissedAttacks,
     size,
     getStatus,
+    reset,
   };
 }
 
 function Player(name, gameboard, isComputer = false) {
-  const moves = [];
+  let moves = [];
+  const reset = () => {
+    moves.length = 0;
+  };
 
   const attack = (target) => {
     logAttack(target);
@@ -191,7 +204,7 @@ function Player(name, gameboard, isComputer = false) {
     console.log(`${name} attacked ${x}, ${y}`);
   };
 
-  const computerMove = () => {
+  const randomMove = () => {
     let x, y;
     let attempts = 0;
     const maxAttempts = 100_000;
@@ -209,7 +222,7 @@ function Player(name, gameboard, isComputer = false) {
     attack(target);
   };
 
-  return { name, attack, isComputer, computerMove, moves };
+  return { name, attack, isComputer, randomMove, moves, reset };
 }
 
 function placeDefaultShips(gameboard) {
@@ -218,47 +231,114 @@ function placeDefaultShips(gameboard) {
   // gameboard.placeShip([{ x: 1, y: 2 }]);
 }
 
-const humanBoard = Gameboard();
-const computerBoard = Gameboard();
-const human = Player("Human", computerBoard);
-const computer = Player("Computer", humanBoard, true);
+function Game() {
+  let humanBoard = Gameboard();
+  let computerBoard = Gameboard();
+  let human = Player("Human", computerBoard);
+  let computer = Player("Computer", humanBoard, true);
+  let winner = null;
 
-const gameStart = () => {
-  placeDefaultShips(humanBoard);
-  placeDefaultShips(computerBoard);
-  humanBoard.printBoard("👶");
-  computerBoard.printBoard("🤖");
-};
+  const placeDefault = () => {
+    placeDefaultShips(humanBoard);
+    placeDefaultShips(computerBoard);
+    humanBoard.print("👶");
+    computerBoard.print("🤖");
+  };
 
-const gameStep = (x, y) => {
-  const target = Coordinate(x, y);
-  human.attack(target);
-  computerBoard.printBoard("🤖");
-  let status = computerBoard.getStatus();
-  if (status === "lost") {
-    console.log("Human wins!");
+  const step = (x, y) => {
+    const target = Coordinate(x, y);
+    human.attack(target);
+    computerBoard.print("🤖");
+    let status = computerBoard.getStatus();
+    if (status === "lost") {
+      console.log("Human wins!");
+      winner = "Human";
+      console.log(winner);
+      return;
+    }
+
+    computer.randomMove();
+    humanBoard.print("👶");
+    status = humanBoard.getStatus();
+    if (status === "lost") {
+      console.log("Computer wins!");
+      winner = "Computer";
+      return;
+    }
+  };
+
+  const restart = () => {
+    humanBoard.reset();
+    computerBoard.reset();
+    human.reset();
+    computer.reset();
+    winner = null;
+  };
+
+  const getWinner = () => {
+    console.log(winner);
+    return winner;
+  };
+
+  return {
+    step,
+    placeDefault,
+    restart,
+    humanBoard,
+    computerBoard,
+    human,
+    computer,
+    getWinner,
+  };
+}
+
+// Test functions
+function testGameWinner() {
+  const game = Game();
+
+  // 1. Initialize a game
+  game.placeDefault();
+
+  // 2. Check the winner is null
+  if (game.getWinner() !== null) {
+    console.error("Failed: Winner should be null after initialization");
     return;
   }
 
-  computer.computerMove();
-  humanBoard.printBoard("👶");
-  status = humanBoard.getStatus();
-  if (status === "lost") {
-    console.log("Computer wins!");
+  // Make moves to ensure Human wins
+  // Given the default ship placements, I'll assume the Computer's ship is at (0, 0).
+  game.step(0, 0);
+
+  // 3. Check that winner is Human
+  if (game.getWinner() !== "Human") {
+    console.error(
+      "Failed: Winner should be Human after sinking Computer's ship"
+    );
     return;
   }
-};
+
+  // 4. Restart the game
+  game.restart();
+
+  // 5. Check that the board is empty
+  if (
+    game.humanBoard.ships.length !== 0 ||
+    game.humanBoard.getMissedAttacks().length !== 0 ||
+    game.computerBoard.ships.length !== 0 ||
+    game.computerBoard.getMissedAttacks().length !== 0
+  ) {
+    console.error("Failed: Boards should be empty after restart");
+    return;
+  }
+
+  console.log("Test passed successfully!");
+}
+
+testGameWinner();
 
 // export functions for test.js
 module.exports.Coordinate = Coordinate;
 module.exports.Ship = Ship;
 module.exports.Gameboard = Gameboard;
 module.exports.Player = Player;
-
-// exports for console-only version
-module.exports.gameStart = gameStart;
-module.exports.gameStep = gameStep;
-module.exports.humanBoard = humanBoard;
-module.exports.computerBoard = computerBoard;
-module.exports.human = human;
-module.exports.computer = computer;
+module.exports.Game = Game;
