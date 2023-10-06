@@ -182,7 +182,7 @@ function Player(name, gameboard, isComputer = false) {
   };
 
   const randomMove = () => {
-    let x, y;
+    let x, y, target;
     let attempts = 0;
     const maxAttempts = 100_000;
 
@@ -209,17 +209,9 @@ function Game() {
   let computer = Player("Computer", humanBoard, true);
   let winner = null;
 
-  const placeDefault = () => {
-    placeDefaultShips(humanBoard);
-    placeDefaultShips(computerBoard);
-    humanBoard.print("👶");
-    computerBoard.print("🤖");
-  };
-
   const step = (x, y) => {
     const target = Coordinate(x, y);
     human.attack(target);
-    computerBoard.print("🤖");
     let status = computerBoard.getStatus();
     if (status === "lost") {
       console.log("Human wins!");
@@ -229,7 +221,6 @@ function Game() {
     }
 
     computer.randomMove();
-    humanBoard.print("👶");
     status = humanBoard.getStatus();
     if (status === "lost") {
       console.log("Computer wins!");
@@ -253,7 +244,6 @@ function Game() {
 
   return {
     step,
-    placeDefault,
     restart,
     humanBoard,
     computerBoard,
