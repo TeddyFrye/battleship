@@ -1,11 +1,14 @@
 {
   "devDependencies": {
+    "@babel/core": "^7.23.0",
+    "@babel/preset-env": "^7.22.20",
+    "babel-jest": "^29.7.0",
     "jest": "^29.7.0",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4"
   },
   "scripts": {
-    "start": "serve .",
+    "start": "webpack ./src/script.js",
     "test": "jest",
     "build": "webpack"
   }
