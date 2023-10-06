@@ -261,4 +261,8 @@ function showWinnerandPromptRestart(winner) {
   }
 }
 
-export { Game, Coordinate, Ship, Gameboard };
+module.exports.Coordinate = Coordinate;
+module.exports.Ship = Ship;
+module.exports.Gameboard = Gameboard;
+module.exports.Player = Player;
+module.exports.Game = Game;
