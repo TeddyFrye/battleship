@@ -8,6 +8,7 @@ td {
     border: 1px solid black;
     text-align: center;
     cursor: pointer;
+    background-color:aqua;
 }
 
 td.ship {
