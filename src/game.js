@@ -216,7 +216,7 @@ function Game() {
     if (status === "lost") {
       console.log("Human wins!");
       winner = "Human";
-      console.log(winner);
+      showWinnerandPromptRestart(winner);
       return;
     }
 
@@ -225,6 +225,7 @@ function Game() {
     if (status === "lost") {
       console.log("Computer wins!");
       winner = "Computer";
+      showWinnerandPromptRestart(winner);
       return;
     }
   };
@@ -252,17 +253,11 @@ function Game() {
     getWinner,
   };
 }
-/*
-function placeDefaultShips(gameboard) {
-  gameboard.placeShip(Ship(Coordinate(0, 0), Coordinate(0, 0)));
-  // gameboard.placeShip([{ x: 1, y: 0 }]);
-  // gameboard.placeShip([{ x: 1, y: 2 }]);
-}
-*/
+
 function showWinnerandPromptRestart(winner) {
   alert(`${winner} wins! Would you like to play again?`);
   if (confirm("Would you like to play again?")) {
-    game.restart();
+    window.game.restart();
   }
 }
 
