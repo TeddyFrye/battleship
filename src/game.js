@@ -1,4 +1,4 @@
-const BOARD_SIZE = 3;
+const BOARD_SIZE = 10;
 
 function Coordinate(x, y) {
   function sameRow(other) {
@@ -143,29 +143,6 @@ function Gameboard() {
     return ships.every((ship) => ship.isSunk());
   };
 
-  const print = (label, withShips) => {
-    if (withShips === undefined) {
-      withShips = true;
-    }
-    console.log(`\n${label}'s board:`);
-    let board = Array(size)
-      .fill("▪️")
-      .map(() => Array(size).fill("🔳"));
-    missedAttacks.forEach(({ x, y }) => {
-      board[y][x] = "🌊";
-    });
-
-    shipCharacter = withShips ? "🚢" : "🔳";
-
-    ships.forEach((ship) => {
-      ship.coordinates.forEach(({ x, y }) => {
-        board[y][x] = ship.isSunk() ? "🔥" : shipCharacter;
-      });
-    });
-
-    console.log(board.map((row) => row.join(" ")).join("\n"));
-  };
-
   const getStatus = () => {
     // return lost if the player with this board has lost
     if (allShipsSunk()) {
@@ -178,9 +155,9 @@ function Gameboard() {
     placeShip,
     receiveAttack,
     allShipsSunk,
-    print,
     ships,
     getMissedAttacks,
+    getShipIfOccupied,
     size,
     getStatus,
     reset,
@@ -205,7 +182,7 @@ function Player(name, gameboard, isComputer = false) {
   };
 
   const randomMove = () => {
-    let x, y;
+    let x, y, target;
     let attempts = 0;
     const maxAttempts = 100_000;
 
@@ -225,12 +202,6 @@ function Player(name, gameboard, isComputer = false) {
   return { name, attack, isComputer, randomMove, moves, reset };
 }
 
-function placeDefaultShips(gameboard) {
-  gameboard.placeShip(Ship(Coordinate(0, 0), Coordinate(0, 0)));
-  // gameboard.placeShip([{ x: 1, y: 0 }]);
-  // gameboard.placeShip([{ x: 1, y: 2 }]);
-}
-
 function Game() {
   let humanBoard = Gameboard();
   let computerBoard = Gameboard();
@@ -238,31 +209,23 @@ function Game() {
   let computer = Player("Computer", humanBoard, true);
   let winner = null;
 
-  const placeDefault = () => {
-    placeDefaultShips(humanBoard);
-    placeDefaultShips(computerBoard);
-    humanBoard.print("👶");
-    computerBoard.print("🤖");
-  };
-
   const step = (x, y) => {
     const target = Coordinate(x, y);
     human.attack(target);
-    computerBoard.print("🤖");
     let status = computerBoard.getStatus();
     if (status === "lost") {
       console.log("Human wins!");
       winner = "Human";
-      console.log(winner);
+      showWinnerandPromptRestart(winner);
       return;
     }
 
     computer.randomMove();
-    humanBoard.print("👶");
     status = humanBoard.getStatus();
     if (status === "lost") {
       console.log("Computer wins!");
       winner = "Computer";
+      showWinnerandPromptRestart(winner);
       return;
     }
   };
@@ -282,7 +245,6 @@ function Game() {
 
   return {
     step,
-    placeDefault,
     restart,
     humanBoard,
     computerBoard,
@@ -292,53 +254,11 @@ function Game() {
   };
 }
 
-// Test functions
-function testGameWinner() {
-  const game = Game();
-
-  // 1. Initialize a game
-  game.placeDefault();
-
-  // 2. Check the winner is null
-  if (game.getWinner() !== null) {
-    console.error("Failed: Winner should be null after initialization");
-    return;
+function showWinnerandPromptRestart(winner) {
+  alert(`${winner} wins! Would you like to play again?`);
+  if (confirm("Would you like to play again?")) {
+    window.game.restart();
   }
-
-  // Make moves to ensure Human wins
-  // Given the default ship placements, I'll assume the Computer's ship is at (0, 0).
-  game.step(0, 0);
-
-  // 3. Check that winner is Human
-  if (game.getWinner() !== "Human") {
-    console.error(
-      "Failed: Winner should be Human after sinking Computer's ship"
-    );
-    return;
-  }
-
-  // 4. Restart the game
-  game.restart();
-
-  // 5. Check that the board is empty
-  if (
-    game.humanBoard.ships.length !== 0 ||
-    game.humanBoard.getMissedAttacks().length !== 0 ||
-    game.computerBoard.ships.length !== 0 ||
-    game.computerBoard.getMissedAttacks().length !== 0
-  ) {
-    console.error("Failed: Boards should be empty after restart");
-    return;
-  }
-
-  console.log("Test passed successfully!");
 }
 
-testGameWinner();
-
-// export functions for test.js
-module.exports.Coordinate = Coordinate;
-module.exports.Ship = Ship;
-module.exports.Gameboard = Gameboard;
-module.exports.Player = Player;
-module.exports.Game = Game;
+export { Game, Coordinate, Ship, Gameboard };

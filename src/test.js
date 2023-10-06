@@ -111,7 +111,6 @@ test("Player should be able to hit and sink enemy ship", () => {
 });
 
 // Tests for Game
-
 test("Restart game should reset all game variables", () => {
   const game = Game();
   expect(game.getWinner()).toBe(null);
@@ -119,8 +118,32 @@ test("Restart game should reset all game variables", () => {
   game.step(0, 0);
   expect(game.getWinner()).not.toBe(null);
   game.restart();
-
+  expect(game.human.moves.length).toBe(0);
   expect(game.humanBoard.ships.length).toBe(0);
   expect(game.computerBoard.ships.length).toBe(0);
   expect(game.computer.moves.length).toBe(0);
+});
+
+// Tests for Game Winner
+test("Game initializes with no winner", () => {
+  const game = Game();
+  expect(game.getWinner()).toBe(null);
+});
+
+test("Human wins after sinking Computer's ship", () => {
+  const game = Game();
+  game.placeDefault();
+  game.step(0, 0);
+  expect(game.getWinner()).toBe("Human");
+});
+
+test("Game state resets correctly after restart", () => {
+  const game = Game();
+  game.placeDefault();
+  game.step(0, 0);
+  game.restart();
+  expect(game.humanBoard.ships.length).toBe(0);
+  expect(game.humanBoard.getMissedAttacks().length).toBe(0);
+  expect(game.computerBoard.ships.length).toBe(0);
+  expect(game.computerBoard.getMissedAttacks().length).toBe(0);
 });

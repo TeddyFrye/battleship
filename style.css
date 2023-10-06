@@ -1,0 +1,29 @@
+table {
+    border-collapse: collapse;
+}
+
+td {
+    width: 30px;
+    height: 30px;
+    border: 1px solid black;
+    text-align: center;
+    cursor: pointer;
+    background-color:aqua;
+}
+
+td.ship {
+    background-color: gray;  /* When a ship is placed */
+}
+
+td.hit {
+    background-color: orange;  /* When a ship cell is hit */
+}
+
+td.miss {
+    background-color: darkblue;  /* When an attack missed */
+}
+
+td.sunk {
+    background-color: red;  /* When a ship is fully sunk */
+}
+
