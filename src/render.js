@@ -25,21 +25,40 @@ function randomCoordinate() {
 
 function placeRandomComputerShips(gameboard) {
   const sizes = [2, 3, 5];
+  const MAX_ATTEMPTS = 100;
+
   sizes.forEach((size) => {
-    let start = randomCoordinate();
-    let end = randomCoordinate();
+    let attempts = 0;
+    let shipPlaced = false;
 
-    do {
-      start = randomCoordinate();
-      end = randomCoordinate();
-    } while (
-      !(start.x === end.x || start.y === end.y) ||
-      (Math.abs(start.x - end.x) + 1 !== size &&
-        Math.abs(start.y - end.y) + 1 !== size)
-    );
+    while (!shipPlaced && attempts < MAX_ATTEMPTS) {
+      let start = randomCoordinate();
+      let end = randomCoordinate();
 
-    const ship = Ship(start, end);
-    gameboard.placeShip(ship);
+      if (
+        (start.x === end.x || start.y === end.y) &&
+        (Math.abs(start.x - end.x) + 1 === size ||
+          Math.abs(start.y - end.y) + 1 === size)
+      ) {
+        const potentialShip = Ship(start, end);
+        let overlaps = potentialShip.coordinates.some((coordinate) =>
+          gameboard.getShipIfOccupied(coordinate)
+        );
+
+        if (!overlaps) {
+          gameboard.placeShip(potentialShip);
+          shipPlaced = true;
+        }
+      }
+
+      attempts++;
+    }
+
+    if (attempts === MAX_ATTEMPTS) {
+      // If maximum attempts reached for any ship size, reset the board and restart the ship placement
+      gameboard.reset();
+      placeRandomComputerShips(gameboard);
+    }
   });
 }
 
@@ -81,7 +100,7 @@ function placeShip() {
       alert(`Invalid placement for ${size}-cell ship.`);
     }
   });
-
+  console.log(window.game.humanBoard.ships);
   // Now place random ships on the computer board
   placeRandomComputerShips(window.game.computerBoard);
 
@@ -101,6 +120,12 @@ function renderGameboard(gameboard, boardId) {
       // Here, determine the state of the cell using gameboard's methods and display accordingly
       const coord = Coordinate(x, y);
       if (gameboard.getShipIfOccupied(coord)) {
+        if (
+          boardId === "humanBoard" ||
+          gameboard.getShipIfOccupied(coord).isSunk()
+        ) {
+          cell.classList.add("ship");
+        }
         // Check if this ship cell has been hit
         if (
           gameboard
@@ -147,9 +172,6 @@ computerBoardElement.addEventListener("click", (event) => {
     renderGameboard(window.game.computerBoard, "computerBoard");
   }
 });
-
-console.log("Attempting to render the board directly from render.js");
-renderBoard("humanBoard");
 
 // Export the placeShip function for use in the browser
 export { renderBoard, placeShip, renderGameboard };

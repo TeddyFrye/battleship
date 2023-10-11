@@ -255,12 +255,10 @@ function Game() {
 }
 
 function showWinnerandPromptRestart(winner) {
-  alert(`${winner} wins! Would you like to play again?`);
-  if (confirm("Would you like to play again?")) {
+  if (confirm(`${winner} wins! Would you like to play again?`)) {
     window.game.restart();
   }
 }
-
 module.exports.Coordinate = Coordinate;
 module.exports.Ship = Ship;
 module.exports.Gameboard = Gameboard;
