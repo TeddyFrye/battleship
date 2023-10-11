@@ -11,7 +11,7 @@ td {
     background-color:aqua;
 }
 
-td.ship {
+#humanBoard td.ship {
     background-color: gray;  /* When a ship is placed */
 }
 
@@ -27,3 +27,17 @@ td.sunk {
     background-color: red;  /* When a ship is fully sunk */
 }
 
+.board-container {
+    display: flex;
+    justify-content: center;
+    align-items: start; 
+    gap: 2rem; /* Adjust as necessary */
+}
+
+
+/* For square cells */
+.board td::before {
+    content: "";
+    display: block;
+    padding-top: 100%;  /* for square cells */
+}
