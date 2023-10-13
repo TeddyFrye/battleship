@@ -1,4 +1,5 @@
-import { Game, Coordinate, Ship, Gameboard } from "./game.js";
+const { Game, Coordinate, Ship, Gameboard } = require("./game");
+
 // Render the boards
 const BOARD_SIZE = 10;
 
@@ -174,4 +175,6 @@ computerBoardElement.addEventListener("click", (event) => {
 });
 
 // Export the placeShip function for use in the browser
-export { renderBoard, placeShip, renderGameboard };
+module.exports.renderBoard = renderBoard;
+module.exports.placeShip = placeShip;
+module.exports.renderGameboard = renderGameboard;
