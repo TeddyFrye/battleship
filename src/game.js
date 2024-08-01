@@ -70,6 +70,7 @@ function Gameboard() {
   const size = BOARD_SIZE;
   let ships = [];
   let missedAttacks = [];
+
   const reset = () => {
     ships.length = 0;
     missedAttacks.length = 0;
@@ -115,7 +116,6 @@ function Gameboard() {
   }
 
   const receiveAttack = (target) => {
-    // Check if this coordinate has already been attacked
     const alreadyAttacked =
       missedAttacks.some((miss) => miss.equals(target)) ||
       ships.some((ship) => ship.hits.some((hit) => hit.equals(target)));
@@ -144,7 +144,6 @@ function Gameboard() {
   };
 
   const getStatus = () => {
-    // return lost if the player with this board has lost
     if (allShipsSunk()) {
       return "lost";
     }
@@ -161,19 +160,28 @@ function Gameboard() {
     size,
     getStatus,
     reset,
+    isValidCoordinate, // Ensure this is returned
   };
 }
 
 function Player(name, gameboard, isComputer = false) {
   let moves = [];
+  let hitQueue = []; // Queue to store targets adjacent to the last hit
   const reset = () => {
     moves.length = 0;
+    hitQueue.length = 0;
   };
 
   const attack = (target) => {
     logAttack(target);
     gameboard.receiveAttack(target);
     moves.push(target);
+
+    // If a ship is hit, enqueue adjacent coordinates to hitQueue
+    const ship = gameboard.getShipIfOccupied(target);
+    if (ship && !ship.isSunk()) {
+      enqueueAdjacentTargets(target);
+    }
   };
 
   const logAttack = (target) => {
@@ -181,41 +189,42 @@ function Player(name, gameboard, isComputer = false) {
     console.log(`${name} attacked ${x}, ${y}`);
   };
 
-  const randomMove = () => {
-    let x, y, target;
-    let attempts = 0;
-    const maxAttempts = 100_000;
+  const enqueueAdjacentTargets = (coordinate) => {
+    const { x, y } = coordinate;
+    const potentialTargets = [
+      Coordinate(x + 1, y),
+      Coordinate(x - 1, y),
+      Coordinate(x, y + 1),
+      Coordinate(x, y - 1),
+    ];
 
-    do {
-      attempts++;
-      x = Math.floor(Math.random() * BOARD_SIZE);
-      y = Math.floor(Math.random() * BOARD_SIZE);
-      target = Coordinate(x, y);
-    } while (
-      moves.some((move) => move.equals(target)) &&
-      attempts < maxAttempts
-    );
-
-    attack(target);
+    potentialTargets.forEach((coord) => {
+      if (
+        gameboard.isValidCoordinate(coord) &&
+        !moves.some((move) => move.equals(coord)) &&
+        !hitQueue.some((move) => move.equals(coord))
+      ) {
+        hitQueue.push(coord);
+      }
+    });
   };
 
-  const smartMove = () => {
-    let target;
+  const smarterMove = () => {
+    let target = null;
+    let x, y; // Declare x and y here
     if (hitQueue.length > 0) {
       // If there are targets in hitQueue, target them first
       target = hitQueue.shift();
     } else {
       // Implement a checkerboard pattern
       do {
-        const x = Math.floor(Math.random() * BOARD_SIZE);
-        const y = Math.floor(Math.random() * BOARD_SIZE);
+        x = Math.floor(Math.random() * BOARD_SIZE);
+        y = Math.floor(Math.random() * BOARD_SIZE);
 
         // Checkerboard pattern: only attack cells where (x + y) % 2 == 0
-        if ((x + y) % 2 === 0) {
-          target = Coordinate(x, y);
-        }
+        target = Coordinate(x, y);
       } while (
-        (!target || moves.some((move) => move.equals(target))) &&
+        (moves.some((move) => move.equals(target)) || (x + y) % 2 !== 0) &&
         hitQueue.length === 0
       );
     }
@@ -223,7 +232,7 @@ function Player(name, gameboard, isComputer = false) {
     attack(target);
   };
 
-  return { name, attack, isComputer, randomMove, smartMove, moves, reset };
+  return { name, attack, isComputer, smarterMove, moves, reset };
 }
 
 function Game() {
@@ -243,7 +252,7 @@ function Game() {
       return true;
     }
 
-    computer.smartMove();
+    computer.smarterMove();
     status = humanBoard.getStatus();
     if (status === "lost") {
       console.log("Computer wins!");
