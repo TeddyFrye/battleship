@@ -1,5 +1,4 @@
 const { Game, Coordinate, Ship, Gameboard } = require("./game");
-
 // Render the boards
 const BOARD_SIZE = 10;
 
@@ -71,14 +70,12 @@ function convertCoord(coordString) {
   const y = parseInt(coordString.slice(1)) - 1;
 
   if (x === -1 || y < 0 || y >= BOARD_SIZE) return null; // Invalid coordinate
-
   return Coordinate(x, y);
 }
 
 function placeShip() {
   const shipSizes = ["two", "three", "five"];
 
-  // Place ships on the human board
   shipSizes.forEach((size) => {
     const startCoord = document
       .getElementById(`${size}CellStart`)
@@ -102,23 +99,19 @@ function placeShip() {
     }
   });
   console.log(window.game.humanBoard.ships);
-  // Now place random ships on the computer board
   placeRandomComputerShips(window.game.computerBoard);
 
-  // Finally, render both gameboards
   renderGameboard(window.game.humanBoard, "humanBoard");
   renderGameboard(window.game.computerBoard, "computerBoard");
 }
 
 function renderGameboard(gameboard, boardId) {
   const boardElement = document.getElementById(boardId);
-  boardElement.innerHTML = ""; // Clear the previous board state
-  // Use your game logic to determine how to display each cell
+  boardElement.innerHTML = "";
   for (let y = 0; y < BOARD_SIZE; y++) {
     const row = document.createElement("tr");
     for (let x = 0; x < BOARD_SIZE; x++) {
       const cell = document.createElement("td");
-      // Here, determine the state of the cell using gameboard's methods and display accordingly
       const coord = Coordinate(x, y);
       if (gameboard.getShipIfOccupied(coord)) {
         if (
@@ -127,7 +120,6 @@ function renderGameboard(gameboard, boardId) {
         ) {
           cell.classList.add("ship");
         }
-        // Check if this ship cell has been hit
         if (
           gameboard
             .getShipIfOccupied(coord)
@@ -167,14 +159,34 @@ computerBoardElement.addEventListener("click", (event) => {
     );
 
     // Handle the attack on the computer's board using rowIndex and colIndex.
-    window.game.step(rowIndex, colIndex);
+    const isWin = window.game.step(rowIndex, colIndex);
     console.log(window.game.humanBoard);
     renderGameboard(window.game.humanBoard, "humanBoard");
     renderGameboard(window.game.computerBoard, "computerBoard");
+
+    if (isWin) {
+      const winner = window.game.getWinner();
+      showVictoryMessage(winner);
+    }
   }
 });
 
-// Export the placeShip function for use in the browser
+function showVictoryMessage(winner) {
+  const victoryMessage = document.createElement("div");
+  victoryMessage.textContent = `${winner} wins!`;
+  victoryMessage.classList.add("victory-message");
+  document.body.appendChild(victoryMessage);
+
+  setTimeout(() => {
+    if (confirm(`${winner} wins! Would you like to play again?`)) {
+      window.game.restart();
+      renderGameboard(window.game.humanBoard, "humanBoard");
+      renderGameboard(window.game.computerBoard, "computerBoard");
+      document.body.removeChild(victoryMessage);
+    }
+  }, 100);
+}
+
 module.exports.renderBoard = renderBoard;
 module.exports.placeShip = placeShip;
 module.exports.renderGameboard = renderGameboard;

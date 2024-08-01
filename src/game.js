@@ -216,8 +216,7 @@ function Game() {
     if (status === "lost") {
       console.log("Human wins!");
       winner = "Human";
-      showWinnerandPromptRestart(winner);
-      return;
+      return true;
     }
 
     computer.randomMove();
@@ -225,9 +224,9 @@ function Game() {
     if (status === "lost") {
       console.log("Computer wins!");
       winner = "Computer";
-      showWinnerandPromptRestart(winner);
-      return;
+      return true;
     }
+    return false;
   };
 
   const restart = () => {
@@ -254,11 +253,6 @@ function Game() {
   };
 }
 
-function showWinnerandPromptRestart(winner) {
-  if (confirm(`${winner} wins! Would you like to play again?`)) {
-    window.game.restart();
-  }
-}
 module.exports.Coordinate = Coordinate;
 module.exports.Ship = Ship;
 module.exports.Gameboard = Gameboard;
