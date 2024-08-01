@@ -199,7 +199,31 @@ function Player(name, gameboard, isComputer = false) {
     attack(target);
   };
 
-  return { name, attack, isComputer, randomMove, moves, reset };
+  const smartMove = () => {
+    let target;
+    if (hitQueue.length > 0) {
+      // If there are targets in hitQueue, target them first
+      target = hitQueue.shift();
+    } else {
+      // Implement a checkerboard pattern
+      do {
+        const x = Math.floor(Math.random() * BOARD_SIZE);
+        const y = Math.floor(Math.random() * BOARD_SIZE);
+
+        // Checkerboard pattern: only attack cells where (x + y) % 2 == 0
+        if ((x + y) % 2 === 0) {
+          target = Coordinate(x, y);
+        }
+      } while (
+        (!target || moves.some((move) => move.equals(target))) &&
+        hitQueue.length === 0
+      );
+    }
+
+    attack(target);
+  };
+
+  return { name, attack, isComputer, randomMove, smartMove, moves, reset };
 }
 
 function Game() {
@@ -219,7 +243,7 @@ function Game() {
       return true;
     }
 
-    computer.randomMove();
+    computer.smartMove();
     status = humanBoard.getStatus();
     if (status === "lost") {
       console.log("Computer wins!");

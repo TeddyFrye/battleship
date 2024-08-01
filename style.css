@@ -14,7 +14,17 @@ td {
 #humanBoard td.ship {
     background-color: gray;  /* When a ship is placed */
 }
+#humanBoard td.hit {
+	background-color: orange;  /* When a ship cell is hit */
+}
 
+#humanBoard td.miss {
+	background-color: darkblue;  /* When an attack missed */
+}
+
+#humanBoard td.sunk {
+	background-color: red;  /* When a ship is fully sunk */
+}
 td.hit {
     background-color: orange;  /* When a ship cell is hit */
 }
