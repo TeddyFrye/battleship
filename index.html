@@ -4,79 +4,62 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="board-container">
+      <!-- Human Board -->
       <div class="board-wrapper">
         <h2>Human Board</h2>
         <table id="humanBoard"></table>
       </div>
+
+      <!-- Ship Placement -->
       <div class="placement form">
         <h2>Ship Placement</h2>
-        <form id="shipPlacementForm">
-          <div>
-            <label for="oneCellStart">2-cell Ship:</label>
-            <input
-              type="text"
-              id="twoCellStart"
-              placeholder="Start (e.g., A1)"
-              value="A1"
-            />
-            -
-            <input
-              type="text"
-              id="twoCellEnd"
-              placeholder="End (e.g., A2)"
-              value="A2"
-            />
+        <div id="ship-container">
+          <div
+            class="draggable-ship"
+            id="ship-two"
+            draggable="true"
+            data-size="2"
+          >
+            2-cell Ship
           </div>
-          <div>
-            <label for="threeCellStart">3-cell Ship:</label>
-            <input
-              type="text"
-              id="threeCellStart"
-              placeholder="Start (e.g., B1)"
-              value="B1"
-            />
-            -
-            <input
-              type="text"
-              id="threeCellEnd"
-              placeholder="End (e.g., B3)"
-              value="B3"
-            />
+          <div
+            class="draggable-ship"
+            id="ship-three"
+            draggable="true"
+            data-size="3"
+          >
+            3-cell Ship
           </div>
-          <div>
-            <label for="fiveCellStart">5-cell Ship:</label>
-            <input
-              type="text"
-              id="fiveCellStart"
-              placeholder="Start (e.g., C1)"
-              value="C1"
-            />
-            -
-            <input
-              type="text"
-              id="fiveCellEnd"
-              placeholder="End (e.g., C5)"
-              value="C5"
-            />
+          <div
+            class="draggable-ship"
+            id="ship-five"
+            draggable="true"
+            data-size="5"
+          >
+            5-cell Ship
           </div>
+        </div>
 
-          <button id="shipButton" type="button">Place Ships</button>
-        </form>
+        <button id="beginGameButton" type="button">Begin Game</button>
       </div>
+
+      <!-- Computer Board -->
       <div class="board-wrapper">
         <h2>Computer Board</h2>
         <table id="computerBoard"></table>
       </div>
     </div>
+
+    <!-- Inline script for quick debugging -->
     <script>
       console.log("Inline script executed");
     </script>
 
+    <!-- Main JavaScript file -->
     <script src="dist/main.js"></script>
   </body>
 </html>

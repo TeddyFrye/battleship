@@ -1,20 +1,106 @@
-const { Game, Coordinate, Ship, Gameboard } = require("./game");
-// Render the boards
+const { Game, Coordinate, Ship, Gameboard, isSunk } = require("./game");
 const BOARD_SIZE = 10;
 
-function renderBoard(boardId) {
-  console.log("renderBoard function called");
-  const boardElement = document.getElementById(boardId);
-  for (let i = 0; i < BOARD_SIZE; i++) {
+// Initialize DOM elements
+const shipContainer = document.getElementById("ship-container");
+const humanBoardElement = document.getElementById("humanBoard");
+const computerBoardElement = document.getElementById("computerBoard");
+
+// Initialize both boards
+renderBoard(humanBoardElement);
+renderBoard(computerBoardElement);
+
+function renderBoard(boardElement) {
+  for (let y = 0; y < BOARD_SIZE; y++) {
     const row = document.createElement("tr");
-    for (let j = 0; j < BOARD_SIZE; j++) {
+    for (let x = 0; x < BOARD_SIZE; x++) {
       const cell = document.createElement("td");
+      cell.dataset.x = x;
+      cell.dataset.y = y;
       row.appendChild(cell);
     }
     boardElement.appendChild(row);
   }
-  console.log("renderBoard function complete");
 }
+
+// Handle drag events for human player ship placement
+let draggedShip = null;
+let isHorizontal = true; // Default orientation
+
+shipContainer.addEventListener("dragstart", (event) => {
+  draggedShip = event.target;
+  event.dataTransfer.setData("text/plain", draggedShip.id);
+});
+
+humanBoardElement.addEventListener("dragover", (event) => {
+  event.preventDefault(); // Allow drop
+  const cell = event.target;
+  if (cell.tagName === "TD") {
+    cell.classList.add("drop-target");
+  }
+});
+
+humanBoardElement.addEventListener("dragleave", (event) => {
+  const cell = event.target;
+  if (cell.tagName === "TD") {
+    cell.classList.remove("drop-target");
+  }
+});
+
+humanBoardElement.addEventListener("drop", (event) => {
+  event.preventDefault();
+  const cell = event.target;
+  if (cell.tagName === "TD" && draggedShip) {
+    const shipSize = parseInt(draggedShip.dataset.size);
+    const startX = parseInt(cell.dataset.x);
+    const startY = parseInt(cell.dataset.y);
+
+    if (canPlaceShip(startX, startY, shipSize, isHorizontal)) {
+      placeShipOnBoard(startX, startY, shipSize, isHorizontal);
+      draggedShip.remove(); // Remove ship from the container once placed
+    }
+
+    cell.classList.remove("drop-target");
+  }
+});
+
+function canPlaceShip(startX, startY, size, isHorizontal) {
+  for (let i = 0; i < size; i++) {
+    const x = isHorizontal ? startX + i : startX;
+    const y = isHorizontal ? startY : startY + i;
+    if (x >= BOARD_SIZE || y >= BOARD_SIZE) return false; // Ship goes off the board
+    const cell = humanBoardElement.querySelector(
+      `td[data-x='${x}'][data-y='${y}']`
+    );
+    if (cell.classList.contains("ship")) return false; // Already occupied
+  }
+  return true;
+}
+
+function placeShipOnBoard(startX, startY, size, isHorizontal) {
+  const coordinates = [];
+  for (let i = 0; i < size; i++) {
+    const x = isHorizontal ? startX + i : startX;
+    const y = isHorizontal ? startY : startY + i;
+    const cell = humanBoardElement.querySelector(
+      `td[data-x='${x}'][data-y='${y}']`
+    );
+    cell.classList.add("ship"); // Mark cell as occupied
+    coordinates.push(Coordinate(x, y));
+  }
+
+  // Create a ship object and add it to the gameboard
+  const ship = Ship(coordinates[0], coordinates[coordinates.length - 1]);
+  if (ship) {
+    window.game.humanBoard.placeShip(ship);
+  }
+}
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "r") {
+    isHorizontal = !isHorizontal; // Toggle orientation on 'r' key press
+  }
+});
 
 function randomCoordinate() {
   return Coordinate(
@@ -32,22 +118,24 @@ function placeRandomComputerShips(gameboard) {
     let shipPlaced = false;
 
     while (!shipPlaced && attempts < MAX_ATTEMPTS) {
-      let start = randomCoordinate();
-      let end = randomCoordinate();
+      const start = randomCoordinate();
+      const isHorizontal = Math.random() < 0.5; // Randomize orientation
+      const end = isHorizontal
+        ? Coordinate(start.x + size - 1, start.y)
+        : Coordinate(start.x, start.y + size - 1);
 
-      if (
-        (start.x === end.x || start.y === end.y) &&
-        (Math.abs(start.x - end.x) + 1 === size ||
-          Math.abs(start.y - end.y) + 1 === size)
-      ) {
+      // Ensure the end coordinate is within bounds
+      if (end.x < BOARD_SIZE && end.y < BOARD_SIZE) {
         const potentialShip = Ship(start, end);
-        let overlaps = potentialShip.coordinates.some((coordinate) =>
-          gameboard.getShipIfOccupied(coordinate)
-        );
+        if (potentialShip) {
+          let overlaps = potentialShip.coordinates.some((coordinate) =>
+            gameboard.getShipIfOccupied(coordinate)
+          );
 
-        if (!overlaps) {
-          gameboard.placeShip(potentialShip);
-          shipPlaced = true;
+          if (!overlaps) {
+            gameboard.placeShip(potentialShip);
+            shipPlaced = true;
+          }
         }
       }
 
@@ -55,86 +143,49 @@ function placeRandomComputerShips(gameboard) {
     }
 
     if (attempts === MAX_ATTEMPTS) {
-      // If maximum attempts reached for any ship size, reset the board and restart the ship placement
+      console.error(
+        "Failed to place ship after max attempts. Resetting board."
+      );
       gameboard.reset();
       placeRandomComputerShips(gameboard);
     }
   });
 }
 
-function convertCoord(coordString) {
-  if (!coordString || coordString.length < 2) return null;
-
-  const letters = "ABCDEFGHIJ"; // For a 10x10 board
-  const x = letters.indexOf(coordString[0]);
-  const y = parseInt(coordString.slice(1)) - 1;
-
-  if (x === -1 || y < 0 || y >= BOARD_SIZE) return null; // Invalid coordinate
-  return Coordinate(x, y);
-}
-
-function placeShip() {
-  const shipSizes = ["two", "three", "five"];
-
-  shipSizes.forEach((size) => {
-    const startCoord = document
-      .getElementById(`${size}CellStart`)
-      .value.toUpperCase();
-    const endCoord = document
-      .getElementById(`${size}CellEnd`)
-      .value.toUpperCase();
-    const start = convertCoord(startCoord);
-    const end = convertCoord(endCoord);
-
-    const ship = Ship(Coordinate(start.x, start.y), Coordinate(end.x, end.y));
-    if (
-      ship &&
-      ((size === "two" && ship.coordinates.length === 2) ||
-        (size === "three" && ship.coordinates.length === 3) ||
-        (size === "five" && ship.coordinates.length === 5))
-    ) {
-      window.game.humanBoard.placeShip(ship);
-    } else {
-      alert(`Invalid placement for ${size}-cell ship.`);
-    }
-  });
-  console.log(window.game.humanBoard.ships);
+function beginGame() {
+  // Initialize the game
+  if (!window.game) {
+    window.game = Game();
+  }
+  // Place ships on the computer board
   placeRandomComputerShips(window.game.computerBoard);
 
-  renderGameboard(window.game.humanBoard, "humanBoard");
-  renderGameboard(window.game.computerBoard, "computerBoard");
+  // Render both boards
+  renderGameboard(window.game.humanBoard, "humanBoard", true);
+  renderGameboard(window.game.computerBoard, "computerBoard", false);
 }
 
-function renderGameboard(gameboard, boardId) {
+function renderGameboard(gameboard, boardId, preserveShips = false) {
   const boardElement = document.getElementById(boardId);
-  boardElement.innerHTML = "";
+  boardElement.innerHTML = ""; // Clear the board's HTML
+
   for (let y = 0; y < BOARD_SIZE; y++) {
     const row = document.createElement("tr");
     for (let x = 0; x < BOARD_SIZE; x++) {
       const cell = document.createElement("td");
       const coord = Coordinate(x, y);
-      if (gameboard.getShipIfOccupied(coord)) {
-        if (
-          boardId === "humanBoard" ||
-          gameboard.getShipIfOccupied(coord).isSunk()
-        ) {
-          cell.classList.add("ship");
-        }
-        if (
-          gameboard
-            .getShipIfOccupied(coord)
-            .hits.some((hit) => hit.equals(coord))
-        ) {
-          cell.classList.add("hit");
-        } else {
-          cell.classList.add("ship");
-        }
-        if (
-          gameboard.getShipIfOccupied(coord) &&
-          gameboard.getShipIfOccupied(coord).isSunk()
-        ) {
-          cell.classList.add("sunk");
-        }
+
+      if (preserveShips && gameboard.getShipIfOccupied(coord)) {
+        cell.classList.add("ship");
+      }
+      if (ship && ship.isSunk()) {
+        cell.classList.add("sunk");
+      }
+      if (
+        gameboard.getShipIfOccupied(coord) &&
+        gameboard.getShipIfOccupied(coord).hits.some((hit) => hit.equals(coord))
+      ) {
+        cell.classList.add("hit");
       } else if (
         gameboard.getMissedAttacks().some((miss) => miss.equals(coord))
       ) {
@@ -146,23 +197,23 @@ function renderGameboard(gameboard, boardId) {
   }
 }
 
-const shipButton = document.getElementById("shipButton");
-shipButton.addEventListener("click", placeShip);
+const beginGameButton = document.getElementById("beginGameButton");
+beginGameButton.addEventListener("click", beginGame);
 
-const computerBoardElement = document.getElementById("computerBoard");
 computerBoardElement.addEventListener("click", (event) => {
   if (event.target.tagName === "TD") {
     const cell = event.target;
-    const rowIndex = Array.from(cell.parentNode.children).indexOf(cell);
-    const colIndex = Array.from(cell.parentNode.parentNode.children).indexOf(
+    const rowIndex = Array.from(cell.parentNode.parentNode.children).indexOf(
       cell.parentNode
     );
+    const colIndex = Array.from(cell.parentNode.children).indexOf(cell);
 
     // Handle the attack on the computer's board using rowIndex and colIndex.
-    const isWin = window.game.step(rowIndex, colIndex);
+    const isWin = window.game.step(colIndex, rowIndex);
     console.log(window.game.humanBoard);
-    renderGameboard(window.game.humanBoard, "humanBoard");
-    renderGameboard(window.game.computerBoard, "computerBoard");
+    renderGameboard(window.game.humanBoard, "humanBoard", true);
+    renderGameboard(window.game.computerBoard, "computerBoard", false);
+    console.log(`Attacking coordinate: (${colIndex}, ${rowIndex})`);
 
     if (isWin) {
       const winner = window.game.getWinner();
@@ -180,13 +231,13 @@ function showVictoryMessage(winner) {
   setTimeout(() => {
     if (confirm(`${winner} wins! Would you like to play again?`)) {
       window.game.restart();
-      renderGameboard(window.game.humanBoard, "humanBoard");
-      renderGameboard(window.game.computerBoard, "computerBoard");
+      renderGameboard(window.game.humanBoard, "humanBoard", true);
+      renderGameboard(window.game.computerBoard, "computerBoard", false);
       document.body.removeChild(victoryMessage);
     }
   }, 100);
 }
 
 module.exports.renderBoard = renderBoard;
-module.exports.placeShip = placeShip;
+module.exports.beginGame = beginGame;
 module.exports.renderGameboard = renderGameboard;

@@ -146,8 +146,9 @@ function Gameboard() {
   const getStatus = () => {
     if (allShipsSunk()) {
       return "lost";
+    } else {
+      return "playing";
     }
-    return "playing";
   };
 
   return {
@@ -160,7 +161,7 @@ function Gameboard() {
     size,
     getStatus,
     reset,
-    isValidCoordinate, // Ensure this is returned
+    isValidCoordinate,
   };
 }
 

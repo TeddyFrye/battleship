@@ -1,67 +1,137 @@
 table {
-    border-collapse: collapse;
+	border-collapse: collapse;
 }
 
 td {
-    width: 30px;
-    height: 30px;
-    border: 1px solid black;
-    text-align: center;
-    cursor: pointer;
-    background-color:aqua;
+	width: 30px;
+	height: 30px;
+	border: 1px solid black;
+	text-align: center;
+	cursor: pointer;
+	background-color: aqua;
+}
+
+.draggable-ship {
+	width: 100px;
+	height: 20px;
+	background-color: rgb(144, 144, 144);
+	margin: 5px;
+	cursor: move;
+	text-align: center;
+	line-height: 20px;
+}
+
+.board {
+	border-collapse: collapse;
+}
+
+.board td {
+	width: 30px;
+	height: 30px;
+	border: 1px solid #333;
+}
+
+.drop-target {
+	background-color: lightgreen; /* Highlight cells when a ship is dragged over them */
+}
+
+#computerBoard td.ship {
+	background-color: gray; /* When a ship is placed */
 }
 
 #humanBoard td.ship {
-    background-color: gray;  /* When a ship is placed */
+	background-color: gray; /* When a ship is placed */
 }
+
 #humanBoard td.hit {
-	background-color: orange;  /* When a ship cell is hit */
+	background-color: orange; /* When a ship cell is hit */
 }
 
 #humanBoard td.miss {
-	background-color: darkblue;  /* When an attack missed */
+	background-color: darkblue; /* When an attack missed */
 }
 
 #humanBoard td.sunk {
-	background-color: red;  /* When a ship is fully sunk */
+	background-color: red; /* When a ship is fully sunk */
 }
+
 td.hit {
-    background-color: orange;  /* When a ship cell is hit */
+	background-color: orange; /* When a ship cell is hit */
 }
 
 td.miss {
-    background-color: darkblue;  /* When an attack missed */
+	background-color: darkblue; /* When an attack missed */
 }
 
 td.sunk {
-    background-color: red;  /* When a ship is fully sunk */
+	background-color: red; /* When a ship is fully sunk */
 }
 
 .board-container {
-    display: flex;
-    justify-content: center;
-    align-items: start; 
-    gap: 2rem; /* Adjust as necessary */
+	display: flex;
+	justify-content: center;
+	align-items: start;
+	gap: 2rem; /* Adjust as necessary */
 }
 
-
-/* For square cells */
 .board td::before {
-    content: "";
-    display: block;
-    padding-top: 100%;  /* for square cells */
+	content: "";
+	display: block;
+	padding-top: 100%; /* for square cells */
 }
 
 .victory-message {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 20px;
-  border-radius: 10px;
-  font-size: 24px;
-  text-align: center;
-  z-index: 1000;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background-color: rgba(0, 0, 0, 0.8);
+	color: white;
+	padding: 20px;
+	border-radius: 10px;
+	font-size: 24px;
+	text-align: center;
+	z-index: 1000;
+}
+
+body {
+	font-family: Arial, sans-serif;
+}
+
+.board-container {
+	display: flex;
+	justify-content: space-around;
+	margin-top: 20px;
+}
+
+.board-wrapper {
+	text-align: center;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table td {
+	width: 30px;
+	height: 30px;
+	border: 1px solid #333;
+}
+
+.drop-target {
+	background-color: lightgreen;
+}
+
+.victory-message {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background-color: rgba(0, 0, 0, 0.8);
+	color: white;
+	padding: 20px;
+	border-radius: 10px;
+	font-size: 24px;
+	text-align: center;
+	z-index: 1000;
 }
