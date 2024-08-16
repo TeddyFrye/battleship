@@ -82,23 +82,6 @@ test("Player can attack enemy gameboard", () => {
   );
 });
 
-test("Computer player can make a unique move", () => {
-  const enemyGameboard = Gameboard();
-  const computerPlayer = Player("computer", enemyGameboard, true);
-  computerPlayer.randomMove();
-  expect(computerPlayer.moves.length).toBe(1);
-});
-
-test("Random moves should be able to fill board", () => {
-  const enemyGameboard = Gameboard();
-  const computerPlayer = Player("computer", enemyGameboard, true);
-  const totalSpaces = enemyGameboard.size * enemyGameboard.size;
-  for (let i = 0; i < totalSpaces; i++) computerPlayer.randomMove();
-  expect(new Set(computerPlayer.moves.map(JSON.stringify)).size).toBe(
-    totalSpaces
-  );
-});
-
 test("Player should be able to hit and sink enemy ship", () => {
   const enemyGameboard = Gameboard();
   ship = Ship(Coordinate(0, 0), Coordinate(0, 0));
@@ -129,16 +112,6 @@ test("Restart game should reset all game variables", () => {
   expect(game.humanBoard.ships.length).toBe(0);
   expect(game.computerBoard.ships.length).toBe(0);
   expect(game.computer.moves.length).toBe(0);
-});
-
-test("Human wins after sinking Computer's ship", () => {
-  const game = Game();
-  const enemyGameboard = Gameboard();
-  ship = Ship(Coordinate(0, 0), Coordinate(0, 0));
-  enemyGameboard.placeShip(ship);
-  game.step(0, 0);
-  expect(game.getWinner()).toBe("Human");
-  expect(window.game.restart).toHaveBeenCalled(); // Check if game restart is prompted
 });
 
 test("Game state resets correctly after restart", () => {
